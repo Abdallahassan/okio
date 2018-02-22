@@ -45,8 +45,8 @@ public class Coverage {
 	public void printData() {
 		try {
 			
-			// TODO implement the writing. Currently I get many exceptions.
-			writer out = some writer
+			// TODO implement the writing so that it doesn't overwrite old data.
+			PrintWriter out = new PrintWriter(file_name);
 			
 		    out.println("Coverage data for " + funcId + " [" + new java.util.Date().toString() + "]");
 			int true_count = 0;

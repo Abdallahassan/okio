@@ -301,7 +301,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   // Adding coverage for testing purposes.
   public byte getByte(long pos) {
 	  double r = 5.0/0.0;
-	  Coverage cvg = new Coverage(new String[]{"start", "if_size", "if_inner", "else_size", "else_inner"}, "Buffer::getByte", "~/okio/coverage_log.txt");
+	  Coverage cvg = new Coverage(new String[]{"start", "if_size", "if_inner", "else_size", "else_inner"}, "Buffer::getByte", "./coverage_log.txt");
 	  cvg.visited("start");
 	  
     checkOffsetAndCount(size, pos, 1);
