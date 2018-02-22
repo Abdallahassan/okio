@@ -1,7 +1,0 @@
-Coverage data for null [Thu Feb 22 19:29:27 CET 2018]
-else_size: false
-start: true
-if_inner: true
-else_inner: false
-if_size: true
-Total coverage: 3/5 = 0.6

@@ -1,7 +1,8 @@
 package okio;
 
-import java.io.BufferedWriter;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,23 +10,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class Coverage {
+public final class Coverage {
 	
 	private Map<String, AtomicBoolean> data;
 	private String funcId;
-	private String file_name;
 	
 	/**
 	 * @param IDs A list of strings identifying each branch/edge of the function we want to measure.
-	 * @param funcId A string identifying the function, for example the function's name.
+	 * @param funcIdentity A string identifying the function, for example the function's name.
 	 * @param filename Name of the file that this Coverag class should print to at the end.
 	 */
-	public Coverage(String[] IDs, String funcId, String filename) {
-		data = new HashMap<String, AtomicBoolean>();
+	private Coverage(String[] IDs, String funcIdentity, String filename) {
+		/*data = new HashMap<String, AtomicBoolean>();
 		for (String str : IDs) {
 			data.put(str, new AtomicBoolean(false));
 		}
-		file_name = filename;
+		funcId = funcIdentity;
+		file_name = filename;*/
 	}
 	
 	/**
@@ -41,13 +42,20 @@ public class Coverage {
 	/**
 	 * Print coverage data after we're done.
 	 * @param filename the path to the file where the data is printed.
+	 * Right now we don't use this.
 	 */
 	public void printData() {
-		try {
+		//try {
 			
 			// TODO implement the writing so that it doesn't overwrite old data.
-			PrintWriter out = new PrintWriter(file_name);
+			//PrintWriter out = new PrintWriter(file_name);
 			
+			/*
+			File file = new File(file_name);
+			FileWriter fr = new FileWriter(file, true);
+			BufferedWriter br = new BufferedWriter(fr);
+			PrintWriter out = new PrintWriter(br);*/
+			/*
 		    out.println("Coverage data for " + funcId + " [" + new java.util.Date().toString() + "]");
 			int true_count = 0;
 			for (String str: data.keySet()) {
@@ -57,17 +65,44 @@ public class Coverage {
 				}
 			}
 			out.println("Total coverage: " + true_count + "/" + data.size() + " = " + ((double)true_count)/((double)data.size()));
-			out.close();
-		} catch (IOException e) {
+			out.println();
+			out.close();*/
+			//br.close();
+			//fr.close();
+		/*} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 	}
 	
-	@Override
-    protected void finalize() throws Throwable
-    {
-        printData(); // print data of this Coverage class before the garbage collector destroys it.
-    }
-
+	
+	public static void replace(String BranchID, String file_name) {
+		{
+	         try
+	             {
+	             File file = new File(file_name);
+	             BufferedReader reader = new BufferedReader(new FileReader(file));
+	             String line = "", oldtext = "";
+	             while((line = reader.readLine()) != null) {
+	            		 String[] strs = line.split(" ");
+		            	 if (strs[0].equals(BranchID)) {
+		            		 line=line.replaceAll("FALSE", "TRUE");
+		            	 }
+	            	 
+	                 oldtext += line + "\r\n";
+	             }
+	             reader.close();
+	             // replace a word in a file
+	             //String newtext = oldtext.replaceAll("drink", "Love");
+	            
+	             //To replace a line in a file	            
+	             FileWriter writer = new FileWriter(file_name);
+	             writer.write(oldtext);writer.close();
+	         }
+	         catch (IOException ioe)
+	             {
+	             ioe.printStackTrace();
+	         }
+	     }
+	}
 }

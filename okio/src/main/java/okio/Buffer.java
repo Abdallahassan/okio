@@ -300,34 +300,40 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   /** Returns the byte at {@code pos}. */
   // Adding coverage for testing purposes.
   public byte getByte(long pos) {
-	  double r = 5.0/0.0;
-	  Coverage cvg = new Coverage(new String[]{"start", "if_size", "if_inner", "else_size", "else_inner"}, "Buffer::getByte", "./coverage_log.txt");
-	  cvg.visited("start");
+
+	  //cvg.visited("start");
+  	Coverage.replace("start", "./covg.txt");
 	  
     checkOffsetAndCount(size, pos, 1);
     if (size - pos > pos) {
-  	  cvg.visited("if_size");
+  	  //cvg.visited("if_size");
+      	Coverage.replace("if_size", "./covg.txt");
     	
       for (Segment s = head; true; s = s.next) {
         int segmentByteCount = s.limit - s.pos;
         if (pos < segmentByteCount) {
-      	  cvg.visited("if_inner");
+      	//  cvg.visited("if_inner");
+          	Coverage.replace("if_inner", "./covg.txt");
         	
-      	  cvg.printData();
+      	 // cvg.printData();
         	return s.data[s.pos + (int) pos];
         }
         pos -= segmentByteCount;
       }
     } else {
-  	  cvg.visited("else_size");
+  	  //cvg.visited("else_size");
+      	Coverage.replace("else_size", "./covg.txt");
+
     	
       pos -= size;
       for (Segment s = head.prev; true; s = s.prev) {
         pos += s.limit - s.pos;
         if (pos >= 0) {
-      	  cvg.visited("else_inner");
+      	//  cvg.visited("else_inner");
+          	Coverage.replace("else_inner", "./covg.txt");
+
         	
-      	  cvg.printData();
+      	 // cvg.printData();
         	return s.data[s.pos + (int) pos];
         }
       }
