@@ -1,7 +1,0 @@
-else_size: true
-start: true
-if_inner: true
-else_inner: true
-if_size: true
-Total coverage: 5/5 = 1.0
-
