@@ -11,9 +11,18 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class Coverage {
+
+	private class Data {
+
+		Map<String, AtomicBoolean> data;
+		String filename;
+
+		public Data (String filename, String ID, String[] BranchIDs) {
+			
+		}
+	}
 	
 	private Map<String, AtomicBoolean> data;
-	private String funcId;
 	
 	/**
 	 * @param IDs A list of strings identifying each branch/edge of the function we want to measure.
