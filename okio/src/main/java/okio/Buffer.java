@@ -301,40 +301,31 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   // Adding coverage for testing purposes.
   public byte getByte(long pos) {
 
-	  //cvg.visited("start");
-  	Coverage.replace("start", "./covg.txt");
+	Coverage.visitedge("Buffer::getByte", "start");
 	  
     checkOffsetAndCount(size, pos, 1);
     if (size - pos > pos) {
-  	  //cvg.visited("if_size");
-      	Coverage.replace("if_size", "./covg.txt");
+	Coverage.visitedge("Buffer::getByte", "if_size");
     	
       for (Segment s = head; true; s = s.next) {
         int segmentByteCount = s.limit - s.pos;
         if (pos < segmentByteCount) {
-      	//  cvg.visited("if_inner");
-          	Coverage.replace("if_inner", "./covg.txt");
+		Coverage.visitedge("Buffer::getByte", "if_inner");
         	
-      	 // cvg.printData();
         	return s.data[s.pos + (int) pos];
         }
         pos -= segmentByteCount;
       }
     } else {
-  	  //cvg.visited("else_size");
-      	Coverage.replace("else_size", "./covg.txt");
+	Coverage.visitedge("Buffer::getByte", "else_size");
 
-    	
       pos -= size;
       for (Segment s = head.prev; true; s = s.prev) {
         pos += s.limit - s.pos;
         if (pos >= 0) {
-      	//  cvg.visited("else_inner");
-          	Coverage.replace("else_inner", "./covg.txt");
+		Coverage.visitedge("Buffer::getByte", "else_inner");
 
-        	
-      	 // cvg.printData();
-        	return s.data[s.pos + (int) pos];
+		return s.data[s.pos + (int) pos];
         }
       }
     }
