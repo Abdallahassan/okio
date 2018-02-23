@@ -14,15 +14,25 @@ public final class Coverage {
 
 	private class Data {
 
-		Map<String, AtomicBoolean> data;
-		String filename;
+		Map<String, AtomicBoolean> idata;
+		String filenam;
 
-		public Data (String filename, String ID, String[] BranchIDs) {
-			
+		public Data (String filename, String[] BranchIDs) {
+			idata = new HashMap<String, AtomicBoolean>();
+			for (String str : BranchIDs) {
+				idata.put(str, new AtomicBoolean(false));
+			}
+			filenam = filename;
+			}
+
+		public visitbranch(String Branchid) {
+			// TODO Set the branch specified by BranchId to true, and if theres's a change detected, print coverage info to file.
 		}
 	}
 	
-	private Map<String, AtomicBoolean> data;
+	private Map<String, Data> data;
+	
+	data.addData("Buffer::getByte", "./covg.txt", String[]{"start", "if_size", "if_inner", "else_size", "else_inner"});
 	
 	/**
 	 * @param IDs A list of strings identifying each branch/edge of the function we want to measure.
@@ -36,6 +46,14 @@ public final class Coverage {
 		}
 		funcId = funcIdentity;
 		file_name = filename;*/
+	}
+
+	private addData(String Id, String filename, String[] BranchIDs) {
+		data.add(Id, new Data(filename, BranchIDs));
+	}
+
+	public visitedge(String FuncId, String BranchId) {
+		data.get(FuncId).visitbranch(BranchId);
 	}
 	
 	/**
