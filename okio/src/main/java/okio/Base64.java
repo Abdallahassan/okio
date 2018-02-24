@@ -27,11 +27,14 @@ final class Base64 {
   }
 
   public static byte[] decode(String in) {
+    Coverage.visitedge("Base64::decode", "start");
     // Ignore trailing '=' padding and whitespace from the input.
     int limit = in.length();
     for (; limit > 0; limit--) {
+      Coverage.visitedge("Base64::decode", "for1");
       char c = in.charAt(limit - 1);
       if (c != '=' && c != '\n' && c != '\r' && c != ' ' && c != '\t') {
+        Coverage.visitedge("Base64::decode", "if1");
         break;
       }
     }
@@ -43,31 +46,39 @@ final class Base64 {
 
     int word = 0;
     for (int pos = 0; pos < limit; pos++) {
+      Coverage.visitedge("Base64::decode", "for2");
       char c = in.charAt(pos);
 
       int bits;
       if (c >= 'A' && c <= 'Z') {
+        Coverage.visitedge("Base64::decode", "if2");
         // char ASCII value
         //  A    65    0
         //  Z    90    25 (ASCII - 65)
         bits = c - 65;
       } else if (c >= 'a' && c <= 'z') {
+        Coverage.visitedge("Base64::decode", "if3");
         // char ASCII value
         //  a    97    26
         //  z    122   51 (ASCII - 71)
         bits = c - 71;
       } else if (c >= '0' && c <= '9') {
+        Coverage.visitedge("Base64::decode", "if4");
         // char ASCII value
         //  0    48    52
         //  9    57    61 (ASCII + 4)
         bits = c + 4;
       } else if (c == '+' || c == '-') {
+        Coverage.visitedge("Base64::decode", "if4");
         bits = 62;
       } else if (c == '/' || c == '_') {
+        Coverage.visitedge("Base64::decode", "if5");
         bits = 63;
       } else if (c == '\n' || c == '\r' || c == ' ' || c == '\t') {
+        Coverage.visitedge("Base64::decode", "if6");
         continue;
       } else {
+        Coverage.visitedge("Base64::decode", "else1");
         return null;
       }
 
@@ -77,6 +88,7 @@ final class Base64 {
       // For every 4 chars of input, we accumulate 24 bits of output. Emit 3 bytes.
       inCount++;
       if (inCount % 4 == 0) {
+        Coverage.visitedge("Base64::decode", "if7");
         out[outCount++] = (byte) (word >> 16);
         out[outCount++] = (byte) (word >> 8);
         out[outCount++] = (byte) word;
@@ -85,13 +97,16 @@ final class Base64 {
 
     int lastWordChars = inCount % 4;
     if (lastWordChars == 1) {
+      Coverage.visitedge("Base64::decode", "if8");
       // We read 1 char followed by "===". But 6 bits is a truncated byte! Fail.
       return null;
     } else if (lastWordChars == 2) {
+      Coverage.visitedge("Base64::decode", "if9");
       // We read 2 chars followed by "==". Emit 1 byte with 8 of those 12 bits.
       word = word << 12;
       out[outCount++] = (byte) (word >> 16);
     } else if (lastWordChars == 3) {
+      Coverage.visitedge("Base64::decode", "if10");
       // We read 3 chars, followed by "=". Emit 2 bytes for 16 of those 18 bits.
       word = word << 6;
       out[outCount++] = (byte) (word >> 16);
@@ -99,8 +114,11 @@ final class Base64 {
     }
 
     // If we sized our out array perfectly, we're done.
-    if (outCount == out.length) return out;
-
+    if (outCount == out.length){
+      Coverage.visitedge("Base64::decode", "if10");
+      return out;
+    }
+    Coverage.visitedge("Base64::decode", "return");
     // Copy the decoded bytes to a new, right-sized array.
     byte[] prefix = new byte[outCount];
     System.arraycopy(out, 0, prefix, 0, outCount);
