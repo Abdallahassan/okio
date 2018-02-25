@@ -20,7 +20,7 @@ public final class Coverage {
 				"loop1", "loop2", "loop3", "loop4", "data[pos]=b", "return", "impl2bytes.size()=0", "impl2fromIndex<0", "impl2s=null", "impl2size-fromIndex<fromIndex", "impl2while",
 				"impl2else", "impl2for", "impl2while2", "impl2for2", "impl2for2if", "impl2return"}));
 
-		dat.put("Utf8::size", new Data("./coveragsize.txt", new String[]{"start", "start2", "string=null", "beginindex<0", "endindex<beginindex", "endindex>length", "endindex<beginindex", "c<0x80",
+		dat.put("Utf8::size", new Data("./coveragsize.txt", new String[]{"start", "start2", "string=null", "beginindex<0", "endindex<beginindex1", "endindex>length", "endindex<beginindex2", "c<0x80",
 				"c<0x800", "c<0xd800|c>0xdfff", "else1", "c>0xdbff|low<0xdc00|low>0xdfff", "else2", "return"}));
 
 		dat.put("Buffer::readHexadecimalUnsignedLong", new Data("./coveragsizereadhex.txt", new String[]{"start", "size=0", "do", "forloop", "b>='0'&b<='9'", "b>='a'&b<='f'", "b>='A'&b<='F'",
@@ -39,7 +39,7 @@ public final class Coverage {
 		dat.put("Buffer::readDecimalLong", new Data("./coveragreadlong.txt", new String[]{"start", "size=0", "do", "for", "b>='0'&&b<='9'", "value<overflowZone|value=overflowZone&digit<overflowDigit", "!negative", "value*=10", "b='-'&seen=0",
 				"seen=0", "else", "pos=limit", "pos=limitelse", "return"}));
 
-		dat.put("Base64::decode", new Data("./coveragdecode.txt", new String[]{"start", "for1", "if1", "for2", "if2", "if3", "if4", "if5", "if6", "else1", "if7", "if8", "if9", "if10", "return"}));
+		dat.put("Base64::decode", new Data("./coveragdecode.txt", new String[]{"start", "for1", "if1", "for2", "if2", "if3", "if4a", "if4b", "if5", "if6", "else1", "if7", "if8", "if9", "if10a", "if10b", "return"}));
 
 		dat.put("Buffer::writeDecimalLong", new Data("./coveragwritedec.txt", new String[]{"start", "v=0", "v<0", "v<02", "setneg", "w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16",
 													"w17", "w18", "w19", "negative", "while", "negative2", }));

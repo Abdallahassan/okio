@@ -90,7 +90,7 @@ public final class Utf8 {
       throw new IllegalArgumentException("beginIndex < 0: " + beginIndex);
     }
     if (endIndex < beginIndex) {
-      Coverage.visitedge("Utf8::size", "endindex<beginindex");
+      Coverage.visitedge("Utf8::size", "endindex<beginindex1");
       throw new IllegalArgumentException("endIndex < beginIndex: " + endIndex + " < " + beginIndex);
     }
     if (endIndex > string.length()) {
@@ -102,7 +102,7 @@ public final class Utf8 {
     long result = 0;
 
     for (int i = beginIndex; i < endIndex;) {
-      Coverage.visitedge("Utf8::size", "endindex<beginindex");
+      Coverage.visitedge("Utf8::size", "endindex<beginindex2");
       int c = string.charAt(i);
 
       if (c < 0x80) {

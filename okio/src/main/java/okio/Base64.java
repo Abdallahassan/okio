@@ -63,13 +63,13 @@ final class Base64 {
         //  z    122   51 (ASCII - 71)
         bits = c - 71;
       } else if (c >= '0' && c <= '9') {
-        Coverage.visitedge("Base64::decode", "if4");
+        Coverage.visitedge("Base64::decode", "if4a");
         // char ASCII value
         //  0    48    52
         //  9    57    61 (ASCII + 4)
         bits = c + 4;
       } else if (c == '+' || c == '-') {
-        Coverage.visitedge("Base64::decode", "if4");
+        Coverage.visitedge("Base64::decode", "if4b");
         bits = 62;
       } else if (c == '/' || c == '_') {
         Coverage.visitedge("Base64::decode", "if5");
@@ -106,7 +106,7 @@ final class Base64 {
       word = word << 12;
       out[outCount++] = (byte) (word >> 16);
     } else if (lastWordChars == 3) {
-      Coverage.visitedge("Base64::decode", "if10");
+      Coverage.visitedge("Base64::decode", "if10a");
       // We read 3 chars, followed by "=". Emit 2 bytes for 16 of those 18 bits.
       word = word << 6;
       out[outCount++] = (byte) (word >> 16);
@@ -115,7 +115,7 @@ final class Base64 {
 
     // If we sized our out array perfectly, we're done.
     if (outCount == out.length){
-      Coverage.visitedge("Base64::decode", "if10");
+      Coverage.visitedge("Base64::decode", "if10b");
       return out;
     }
     Coverage.visitedge("Base64::decode", "return");
