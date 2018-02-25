@@ -15,6 +15,8 @@
  */
 package okio;
 
+import sun.tools.asm.Cover;
+
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
@@ -298,19 +300,35 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Returns the byte at {@code pos}. */
+  // Adding coverage for testing purposes.
   public byte getByte(long pos) {
+
+	Coverage.visitedge("Buffer::getByte", "start");
+	  
     checkOffsetAndCount(size, pos, 1);
     if (size - pos > pos) {
+	Coverage.visitedge("Buffer::getByte", "if_size");
+    	
       for (Segment s = head; true; s = s.next) {
         int segmentByteCount = s.limit - s.pos;
-        if (pos < segmentByteCount) return s.data[s.pos + (int) pos];
+        if (pos < segmentByteCount) {
+		Coverage.visitedge("Buffer::getByte", "if_inner");
+        	
+        	return s.data[s.pos + (int) pos];
+        }
         pos -= segmentByteCount;
       }
     } else {
+	Coverage.visitedge("Buffer::getByte", "else_size");
+
       pos -= size;
       for (Segment s = head.prev; true; s = s.prev) {
         pos += s.limit - s.pos;
-        if (pos >= 0) return s.data[s.pos + (int) pos];
+        if (pos >= 0) {
+		Coverage.visitedge("Buffer::getByte", "else_inner");
+
+		return s.data[s.pos + (int) pos];
+        }
       }
     }
   }
@@ -423,7 +441,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public long readDecimalLong() {
-    if (size == 0) throw new IllegalStateException("size == 0");
+    Coverage.visitedge("Buffer::readDecimalLong", "start");
+    if (size == 0){
+      Coverage.visitedge("Buffer::readDecimalLong", "size=0");
+      throw new IllegalStateException("size == 0");
+    }
 
     // This value is always built negatively in order to accommodate Long.MIN_VALUE.
     long value = 0;
@@ -435,6 +457,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     long overflowDigit = (Long.MIN_VALUE % 10) + 1;
 
     do {
+      Coverage.visitedge("Buffer::readDecimalLong", "do");
       Segment segment = head;
 
       byte[] data = segment.data;
@@ -442,26 +465,36 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       int limit = segment.limit;
 
       for (; pos < limit; pos++, seen++) {
+        Coverage.visitedge("Buffer::readDecimalLong", "for");
         byte b = data[pos];
         if (b >= '0' && b <= '9') {
+          Coverage.visitedge("Buffer::readDecimalLong", "b>='0'&&b<='9'");
           int digit = '0' - b;
 
           // Detect when the digit would cause an overflow.
           if (value < overflowZone || value == overflowZone && digit < overflowDigit) {
+            Coverage.visitedge("Buffer::readDecimalLong", "value<overflowZone|value=overflowZone&digit<overflowDigit");
             Buffer buffer = new Buffer().writeDecimalLong(value).writeByte(b);
-            if (!negative) buffer.readByte(); // Skip negative sign.
+            if (!negative){
+              Coverage.visitedge("Buffer::readDecimalLong", "!negative");
+              buffer.readByte(); // Skip negative sign.
+            }
             throw new NumberFormatException("Number too large: " + buffer.readUtf8());
           }
+          Coverage.visitedge("Buffer::readDecimalLong", "value*=10");
           value *= 10;
           value += digit;
         } else if (b == '-' && seen == 0) {
+          Coverage.visitedge("Buffer::readDecimalLong", "b='-'&seen=0");
           negative = true;
           overflowDigit -= 1;
         } else {
           if (seen == 0) {
+            Coverage.visitedge("Buffer::readDecimalLong", "seen=0");
             throw new NumberFormatException(
                 "Expected leading [0-9] or '-' character but was 0x" + Integer.toHexString(b));
           }
+          Coverage.visitedge("Buffer::readDecimalLong", "else");
           // Set a flag to stop iteration. We still need to run through segment updating below.
           done = true;
           break;
@@ -469,25 +502,32 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       }
 
       if (pos == limit) {
+        Coverage.visitedge("Buffer::readDecimalLong", "pos=limit");
         head = segment.pop();
         SegmentPool.recycle(segment);
       } else {
+        Coverage.visitedge("Buffer::readDecimalLong", "pos=limitelse");
         segment.pos = pos;
       }
     } while (!done && head != null);
-
+    Coverage.visitedge("Buffer::readDecimalLong", "return");
     size -= seen;
     return negative ? value : -value;
   }
 
   @Override public long readHexadecimalUnsignedLong() {
-    if (size == 0) throw new IllegalStateException("size == 0");
+    Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "start");
+    if (size == 0){
+      Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "size=0");
+      throw new IllegalStateException("size == 0");
+    }
 
     long value = 0;
     int seen = 0;
     boolean done = false;
 
     do {
+      Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "do");
       Segment segment = head;
 
       byte[] data = segment.data;
@@ -495,20 +535,26 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       int limit = segment.limit;
 
       for (; pos < limit; pos++, seen++) {
+        Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "forloop");
         int digit;
 
         byte b = data[pos];
         if (b >= '0' && b <= '9') {
+          Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "b>='0'&b<='9'");
           digit = b - '0';
         } else if (b >= 'a' && b <= 'f') {
+          Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "b>='a'&b<='f'");
           digit = b - 'a' + 10;
         } else if (b >= 'A' && b <= 'F') {
+          Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "b>='A'&b<='F'");
           digit = b - 'A' + 10; // We never write uppercase, but we support reading it.
         } else {
           if (seen == 0) {
+            Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "seen=0");
             throw new NumberFormatException(
                 "Expected leading [0-9a-fA-F] character but was 0x" + Integer.toHexString(b));
           }
+          Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "else");
           // Set a flag to stop iteration. We still need to run through segment updating below.
           done = true;
           break;
@@ -516,6 +562,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
         // Detect when the shift will overflow.
         if ((value & 0xf000000000000000L) != 0) {
+          Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "(value&0xf000000000000000L)!=0");
           Buffer buffer = new Buffer().writeHexadecimalUnsignedLong(value).writeByte(b);
           throw new NumberFormatException("Number too large: " + buffer.readUtf8());
         }
@@ -525,13 +572,15 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       }
 
       if (pos == limit) {
+        Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "pos=limit");
         head = segment.pop();
         SegmentPool.recycle(segment);
       } else {
+        Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "else2");
         segment.pos = pos;
       }
     } while (!done && head != null);
-
+    Coverage.visitedge("Buffer::readHexadecimalUnsignedLong", "return");
     size -= seen;
     return value;
   }
@@ -688,7 +737,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public int readUtf8CodePoint() throws EOFException {
-    if (size == 0) throw new EOFException();
+    if (size == 0){
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "size=0");
+      throw new EOFException();
+    }
 
     byte b0 = getByte(0);
     int codePoint;
@@ -697,35 +749,41 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
     if ((b0 & 0x80) == 0) {
       // 0xxxxxxx.
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "0xxxxxxx");
       codePoint = b0 & 0x7f;
       byteCount = 1; // 7 bits (ASCII).
       min = 0x0;
 
     } else if ((b0 & 0xe0) == 0xc0) {
       // 0x110xxxxx
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "0x110xxxxx");
       codePoint = b0 & 0x1f;
       byteCount = 2; // 11 bits (5 + 6).
       min = 0x80;
 
     } else if ((b0 & 0xf0) == 0xe0) {
       // 0x1110xxxx
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "0x1110xxxx");
       codePoint = b0 & 0x0f;
       byteCount = 3; // 16 bits (4 + 6 + 6).
       min = 0x800;
 
     } else if ((b0 & 0xf8) == 0xf0) {
       // 0x11110xxx
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "0x11110xxx");
       codePoint = b0 & 0x07;
       byteCount = 4; // 21 bits (3 + 6 + 6 + 6).
       min = 0x10000;
 
     } else {
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "!firstbyte");
       // We expected the first byte of a code point but got something else.
       skip(1);
       return REPLACEMENT_CHARACTER;
     }
 
     if (size < byteCount) {
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "size<bytecount");
       throw new EOFException("size < " + byteCount + ": " + size
           + " (to read code point prefixed 0x" + Integer.toHexString(b0) + ")");
     }
@@ -733,13 +791,28 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     // Read the continuation bytes. If we encounter a non-continuation byte, the sequence consumed
     // thus far is truncated and is decoded as the replacement character. That non-continuation byte
     // is left in the stream for processing by the next call to readUtf8CodePoint().
+    boolean doneLoop = false;
+    boolean doneIf = false;
+    boolean doneElse = false;
     for (int i = 1; i < byteCount; i++) {
+      if(!doneLoop){
+        Coverage.visitedge("Buffer::readUtf8CodePoint", "forloop");
+        doneLoop = true;
+      }
       byte b = getByte(i);
       if ((b & 0xc0) == 0x80) {
         // 0x10xxxxxx
+        if(!doneIf){
+          Coverage.visitedge("Buffer::readUtf8CodePoint", "0x10xxxxxx");
+          doneIf = true;
+        }
         codePoint <<= 6;
         codePoint |= b & 0x3f;
       } else {
+        if(!doneElse){
+          Coverage.visitedge("Buffer::readUtf8CodePoint", "else");
+          doneElse = true;
+        }
         skip(i);
         return REPLACEMENT_CHARACTER;
       }
@@ -748,14 +821,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     skip(byteCount);
 
     if (codePoint > 0x10ffff) {
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "code_point>0x10ffff");
       return REPLACEMENT_CHARACTER; // Reject code points larger than the Unicode maximum.
     }
 
     if (codePoint >= 0xd800 && codePoint <= 0xdfff) {
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "code_point<=0xdfff&0xd800");
       return REPLACEMENT_CHARACTER; // Reject partial surrogates.
     }
 
     if (codePoint < min) {
+      Coverage.visitedge("Buffer::readUtf8CodePoint", "code_point<min");
       return REPLACEMENT_CHARACTER; // Reject overlong code points.
     }
 
@@ -868,25 +944,37 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public Buffer writeUtf8(String string) {
+    Coverage.visitedge("Buffer::writeUtf8", "start2");
     return writeUtf8(string, 0, string.length());
   }
 
   @Override public Buffer writeUtf8(String string, int beginIndex, int endIndex) {
-    if (string == null) throw new IllegalArgumentException("string == null");
-    if (beginIndex < 0) throw new IllegalArgumentException("beginIndex < 0: " + beginIndex);
+    Coverage.visitedge("Buffer::writeUtf8", "start");
+    if (string == null){
+      Coverage.visitedge("Buffer::writeUtf8", "string=null");
+      throw new IllegalArgumentException("string == null");
+    }
+    if (beginIndex < 0){
+      Coverage.visitedge("Buffer::writeUtf8", "beginindex<0");
+      throw new IllegalArgumentException("beginIndex < 0: " + beginIndex);
+    }
     if (endIndex < beginIndex) {
+      Coverage.visitedge("Buffer::writeUtf8", "endindex<beginindex");
       throw new IllegalArgumentException("endIndex < beginIndex: " + endIndex + " < " + beginIndex);
     }
     if (endIndex > string.length()) {
+      Coverage.visitedge("Buffer::writeUtf8", "endindex>string.length()");
       throw new IllegalArgumentException(
           "endIndex > string.length: " + endIndex + " > " + string.length());
     }
 
     // Transcode a UTF-16 Java String to UTF-8 bytes.
     for (int i = beginIndex; i < endIndex;) {
+      Coverage.visitedge("Buffer::writeUtf8", "for");
       int c = string.charAt(i);
 
       if (c < 0x80) {
+        Coverage.visitedge("Buffer::writeUtf8", "c<0x80");
         Segment tail = writableSegment(1);
         byte[] data = tail.data;
         int segmentOffset = tail.limit - i;
@@ -898,8 +986,13 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
         // Fast-path contiguous runs of ASCII characters. This is ugly, but yields a ~4x performance
         // improvement over independent calls to writeByte().
         while (i < runLimit) {
+          Coverage.visitedge("Buffer::writeUtf8", "i<runLimit");
           c = string.charAt(i);
-          if (c >= 0x80) break;
+          if (c >= 0x80){
+            Coverage.visitedge("Buffer::writeUtf8", "c>=0x80");
+            break;
+          }
+
           data[segmentOffset + i++] = (byte) c; // 0xxxxxxx
         }
 
@@ -908,12 +1001,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
         size += runSize;
 
       } else if (c < 0x800) {
+        Coverage.visitedge("Buffer::writeUtf8", "c<0x800");
         // Emit a 11-bit character with 2 bytes.
         writeByte(c >>  6        | 0xc0); // 110xxxxx
         writeByte(c       & 0x3f | 0x80); // 10xxxxxx
         i++;
 
       } else if (c < 0xd800 || c > 0xdfff) {
+        Coverage.visitedge("Buffer::writeUtf8", "c<0xd800|c>0xdfff");
         // Emit a 16-bit character with 3 bytes.
         writeByte(c >> 12        | 0xe0); // 1110xxxx
         writeByte(c >>  6 & 0x3f | 0x80); // 10xxxxxx
@@ -921,10 +1016,12 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
         i++;
 
       } else {
+        Coverage.visitedge("Buffer::writeUtf8", "else");
         // c is a surrogate. Make sure it is a high surrogate & that its successor is a low
         // surrogate. If not, the UTF-16 is invalid, in which case we emit a replacement character.
         int low = i + 1 < endIndex ? string.charAt(i + 1) : 0;
         if (c > 0xdbff || low < 0xdc00 || low > 0xdfff) {
+          Coverage.visitedge("Buffer::writeUtf8", "c>0xdbff|low<0xdc00|low>0xdfff");
           writeByte('?');
           i++;
           continue;
@@ -943,7 +1040,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
         i += 2;
       }
     }
-
+    Coverage.visitedge("Buffer::writeUtf8", "return");
     return this;
   }
 
@@ -1126,41 +1223,141 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public Buffer writeDecimalLong(long v) {
+    Coverage.visitedge("Buffer::writeDecimalLong", "start");
     if (v == 0) {
+      Coverage.visitedge("Buffer::writeDecimalLong", "v=0");
       // Both a shortcut and required since the following code can't handle zero.
       return writeByte('0');
     }
 
     boolean negative = false;
     if (v < 0) {
+      Coverage.visitedge("Buffer::writeDecimalLong", "v<0");
       v = -v;
       if (v < 0) { // Only true for Long.MIN_VALUE.
+        Coverage.visitedge("Buffer::writeDecimalLong", "v<02");
         return writeUtf8("-9223372036854775808");
       }
+      Coverage.visitedge("Buffer::writeDecimalLong", "setneg");
       negative = true;
     }
 
     // Binary search for character width which favors matching lower numbers.
-    int width = //
-          v < 100000000L
-        ? v < 10000L
-        ? v < 100L
-        ? v < 10L ? 1 : 2
-        : v < 1000L ? 3 : 4
-        : v < 1000000L
-        ? v < 100000L ? 5 : 6
-        : v < 10000000L ? 7 : 8
-        : v < 1000000000000L
-        ? v < 10000000000L
-        ? v < 1000000000L ? 9 : 10
-        : v < 100000000000L ? 11 : 12
-        : v < 1000000000000000L
-        ? v < 10000000000000L ? 13
-        : v < 100000000000000L ? 14 : 15
-        : v < 100000000000000000L
-        ? v < 10000000000000000L ? 16 : 17
-        : v < 1000000000000000000L ? 18 : 19;
+    int width;
+    if (v < 100000000L){
+      if (v < 10000L){
+        if (v < 100L) {
+          if (v < 10L){
+            Coverage.visitedge("Buffer::writeDecimalLong", "w1");
+            width = 1;
+          }
+          else{
+            Coverage.visitedge("Buffer::writeDecimalLong", "w2");
+            width = 2;
+          }
+        }
+        else {
+          if (v < 1000L){
+            Coverage.visitedge("Buffer::writeDecimalLong", "w3");
+            width = 3;
+          }
+          else{
+            Coverage.visitedge("Buffer::writeDecimalLong", "w4");
+            width = 4;
+          }
+        }
+      }
+      else{
+        if (v < 1000000L){
+          if (v < 100000L){
+            Coverage.visitedge("Buffer::writeDecimalLong", "w5");
+            width = 5;
+          }
+          else{
+            Coverage.visitedge("Buffer::writeDecimalLong", "w6");
+            width = 6;
+          }
+        }
+        else{
+          if (v < 10000000L){
+            Coverage.visitedge("Buffer::writeDecimalLong", "w7");
+            width = 7;
+          }
+          else{
+            Coverage.visitedge("Buffer::writeDecimalLong", "w8");
+            width = 8;
+          }
+        }
+      }
+    }
+    else{
+      if (v < 1000000000000L){
+        if (v < 10000000000L){
+          if (v < 1000000000L){
+            Coverage.visitedge("Buffer::writeDecimalLong", "w9");
+            width = 9;
+          }
+          else {
+            Coverage.visitedge("Buffer::writeDecimalLong", "w10");
+            width = 10;
+          }
+        }
+        else{
+          if (v < 100000000000L){
+            Coverage.visitedge("Buffer::writeDecimalLong", "w11");
+            width = 11;
+          }
+          else{
+            Coverage.visitedge("Buffer::writeDecimalLong", "w12");
+            width = 12;
+          }
+        }
+      }
+      else {
+        if (v < 1000000000000000L){
+          if (v < 10000000000000L){
+            Coverage.visitedge("Buffer::writeDecimalLong", "w13");
+            width = 13;
+          }
+          else {
+            if (v < 100000000000000L){
+              Coverage.visitedge("Buffer::writeDecimalLong", "w14");
+              width = 14;
+            }
+            else{
+              Coverage.visitedge("Buffer::writeDecimalLong", "w15");
+              width = 15;
+            }
+          }
+        }
+        else{
+          if (v < 100000000000000000L){
+            if (v < 10000000000000000L) {
+              Coverage.visitedge("Buffer::writeDecimalLong", "w16");
+              width = 16;
+            }
+            else {
+              Coverage.visitedge("Buffer::writeDecimalLong", "w17");
+              width = 17;
+            }
+          }
+          else {
+            if (v < 1000000000000000000L){
+              Coverage.visitedge("Buffer::writeDecimalLong", "w18");
+              width = 18;
+            }
+            else {
+              Coverage.visitedge("Buffer::writeDecimalLong", "w19");
+              width = 19;
+            }
+          }
+        }
+      }
+    }
+
+
     if (negative) {
+      Coverage.visitedge("Buffer::writeDecimalLong", "negative");
       ++width;
     }
 
@@ -1168,11 +1365,13 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     byte[] data = tail.data;
     int pos = tail.limit + width; // We write backwards from right to left.
     while (v != 0) {
+      Coverage.visitedge("Buffer::writeDecimalLong", "while");
       int digit = (int) (v % 10);
       data[--pos] = DIGITS[digit];
       v /= 10;
     }
     if (negative) {
+      Coverage.visitedge("Buffer::writeDecimalLong", "negative2");
       data[--pos] = '-';
     }
 
@@ -1328,17 +1527,26 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
    * -1 if this buffer does not contain {@code b} in that range.
    */
   @Override public long indexOf(byte b, long fromIndex) {
+    Coverage.visitedge("Buffer::indexOf", "start2");
     return indexOf(b, fromIndex, Long.MAX_VALUE);
   }
 
   @Override public long indexOf(byte b, long fromIndex, long toIndex) {
+    Coverage.visitedge("Buffer::indexOf", "start");
     if (fromIndex < 0 || toIndex < fromIndex) {
+      Coverage.visitedge("Buffer::indexOf", "fromindex<0|toindex<fromindex");
       throw new IllegalArgumentException(
           String.format("size=%s fromIndex=%s toIndex=%s", size, fromIndex, toIndex));
     }
 
-    if (toIndex > size) toIndex = size;
-    if (fromIndex == toIndex) return -1L;
+    if (toIndex > size){
+      Coverage.visitedge("Buffer::indexOf", "toindex<size");
+      toIndex = size;
+    }
+    if (fromIndex == toIndex){
+      Coverage.visitedge("Buffer::indexOf", "fromindex<toindex");
+      return -1L;
+    }
 
     Segment s;
     long offset;
@@ -1348,19 +1556,31 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
       s = head;
       if (s == null) {
+        Coverage.visitedge("Buffer::indexOf", "s=null");
         // No segments to scan!
         return -1L;
       } else if (size - fromIndex < fromIndex) {
+        Coverage.visitedge("Buffer::indexOf", "size-fromindex<fromindex");
         // We're scanning in the back half of this buffer. Find the segment starting at the back.
         offset = size;
+        boolean loop1Done = false;
         while (offset > fromIndex) {
+          if(!loop1Done){
+            Coverage.visitedge("Buffer::indexOf", "loop1");
+            loop1Done = true;
+          }
           s = s.prev;
           offset -= (s.limit - s.pos);
         }
       } else {
         // We're scanning in the front half of this buffer. Find the segment starting at the front.
         offset = 0L;
+        boolean loop2Done = false;
         for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+          if(!loop2Done){
+            Coverage.visitedge("Buffer::indexOf", "loop2");
+            loop2Done = true;
+          }
           s = s.next;
           offset = nextOffset;
         }
@@ -1368,12 +1588,23 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     }
 
     // Scan through the segments, searching for b.
+    boolean loop3Done = false;
     while (offset < toIndex) {
+      if(!loop3Done){
+        Coverage.visitedge("Buffer::indexOf", "loop3");
+        loop3Done = true;
+      }
       byte[] data = s.data;
       int limit = (int) Math.min(s.limit, s.pos + toIndex - offset);
       int pos = (int) (s.pos + fromIndex - offset);
+      boolean loop4Done = false;
       for (; pos < limit; pos++) {
+        if(!loop4Done){
+          Coverage.visitedge("Buffer::indexOf", "loop4");
+          loop4Done = true;
+        }
         if (data[pos] == b) {
+          Coverage.visitedge("Buffer::indexOf", "data[pos]=b");
           return pos - s.pos + offset;
         }
       }
@@ -1383,17 +1614,25 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       fromIndex = offset;
       s = s.next;
     }
-
+      Coverage.visitedge("Buffer::indexOf", "return");
     return -1L;
   }
 
   @Override public long indexOf(ByteString bytes) throws IOException {
+    Coverage.visitedge("Buffer::indexOf", "start3");
     return indexOf(bytes, 0);
   }
 
   @Override public long indexOf(ByteString bytes, long fromIndex) throws IOException {
-    if (bytes.size() == 0) throw new IllegalArgumentException("bytes is empty");
-    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
+    Coverage.visitedge("Buffer::indexOf", "start4");
+    if (bytes.size() == 0){
+      Coverage.visitedge("Buffer::indexOf", "impl2bytes.size()=0");
+      throw new IllegalArgumentException("bytes is empty");
+    }
+    if (fromIndex < 0){
+      Coverage.visitedge("Buffer::indexOf", "impl2fromIndex<0");
+      throw new IllegalArgumentException("fromIndex < 0");
+    }
 
     Segment s;
     long offset;
@@ -1403,19 +1642,24 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
       s = head;
       if (s == null) {
+        Coverage.visitedge("Buffer::indexOf", "impl2s=null");
         // No segments to scan!
         return -1L;
       } else if (size - fromIndex < fromIndex) {
+        Coverage.visitedge("Buffer::indexOf", "impl2size-fromIndex<fromIndex");
         // We're scanning in the back half of this buffer. Find the segment starting at the back.
         offset = size;
         while (offset > fromIndex) {
+          Coverage.visitedge("Buffer::indexOf", "impl2while");
           s = s.prev;
           offset -= (s.limit - s.pos);
         }
       } else {
+        Coverage.visitedge("Buffer::indexOf", "impl2else");
         // We're scanning in the front half of this buffer. Find the segment starting at the front.
         offset = 0L;
         for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+          Coverage.visitedge("Buffer::indexOf", "impl2for");
           s = s.next;
           offset = nextOffset;
         }
@@ -1428,11 +1672,14 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     int bytesSize = bytes.size();
     long resultLimit = size - bytesSize + 1;
     while (offset < resultLimit) {
+      Coverage.visitedge("Buffer::indexOf", "impl2while2");
       // Scan through the current segment.
       byte[] data = s.data;
       int segmentLimit = (int) Math.min(s.limit, s.pos + resultLimit - offset);
       for (int pos = (int) (s.pos + fromIndex - offset); pos < segmentLimit; pos++) {
+        Coverage.visitedge("Buffer::indexOf", "impl2for2");
         if (data[pos] == b0 && rangeEquals(s, pos + 1, bytes, 1, bytesSize)) {
+          Coverage.visitedge("Buffer::indexOf", "impl2for2if");
           return pos - s.pos + offset;
         }
       }
@@ -1442,16 +1689,21 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       fromIndex = offset;
       s = s.next;
     }
-
+    Coverage.visitedge("Buffer::indexOf", "impl2return");
     return -1L;
   }
 
   @Override public long indexOfElement(ByteString targetBytes) {
+    Coverage.visitedge("Buffer::indexOfElement", "start2");
     return indexOfElement(targetBytes, 0);
   }
 
   @Override public long indexOfElement(ByteString targetBytes, long fromIndex) {
-    if (fromIndex < 0) throw new IllegalArgumentException("fromIndex < 0");
+    Coverage.visitedge("Buffer::indexOfElement", "start");
+    if (fromIndex < 0){
+      Coverage.visitedge("Buffer::indexOfElement", "fromIndex<0");
+      throw new IllegalArgumentException("fromIndex < 0");
+    }
 
     Segment s;
     long offset;
@@ -1461,19 +1713,24 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
       s = head;
       if (s == null) {
+        Coverage.visitedge("Buffer::indexOfElement", "s=null");
         // No segments to scan!
         return -1L;
       } else if (size - fromIndex < fromIndex) {
+        Coverage.visitedge("Buffer::indexOfElement", "size-fromIndex<fromIndex");
         // We're scanning in the back half of this buffer. Find the segment starting at the back.
         offset = size;
         while (offset > fromIndex) {
+          Coverage.visitedge("Buffer::indexOfElement", "while");
           s = s.prev;
           offset -= (s.limit - s.pos);
         }
       } else {
+        Coverage.visitedge("Buffer::indexOfElement", "else");
         // We're scanning in the front half of this buffer. Find the segment starting at the front.
         offset = 0L;
         for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+          Coverage.visitedge("Buffer::indexOfElement", "for");
           s = s.next;
           offset = nextOffset;
         }
@@ -1484,14 +1741,18 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     // which search for pairs of chars like `\r` and `\n` or {@code `"` and `\`. The impact of this
     // optimization is a ~5x speedup for this case without a substantial cost to other cases.
     if (targetBytes.size() == 2) {
+      Coverage.visitedge("Buffer::indexOfElement", "targetBytes.size()=2");
       // Scan through the segments, searching for either of the two bytes.
       byte b0 = targetBytes.getByte(0);
       byte b1 = targetBytes.getByte(1);
       while (offset < size) {
+        Coverage.visitedge("Buffer::indexOfElement", "while2");
         byte[] data = s.data;
         for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
+          Coverage.visitedge("Buffer::indexOfElement", "for2");
           int b = data[pos];
           if (b == b0 || b == b1) {
+            Coverage.visitedge("Buffer::indexOfElement", "b=b0|b=b1");
             return pos - s.pos + offset;
           }
         }
@@ -1502,13 +1763,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
         s = s.next;
       }
     } else {
+      Coverage.visitedge("Buffer::indexOfElement", "else2");
       // Scan through the segments, searching for a byte that's also in the array.
       byte[] targetByteArray = targetBytes.internalArray();
       while (offset < size) {
+        Coverage.visitedge("Buffer::indexOfElement", "while3");
         byte[] data = s.data;
         for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
+          Coverage.visitedge("Buffer::indexOfElement", "for3");
           int b = data[pos];
           for (byte t : targetByteArray) {
+            Coverage.visitedge("Buffer::indexOfElement", "for4");
             if (b == t) return pos - s.pos + offset;
           }
         }
@@ -1519,7 +1784,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
         s = s.next;
       }
     }
-
+    Coverage.visitedge("Buffer::indexOfElement", "return");
     return -1L;
   }
 
@@ -1630,6 +1895,9 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     } catch (NoSuchAlgorithmException e) {
       throw new AssertionError();
     }
+  }
+  public void testDigestNoSuchAlgorithmException(String algorithm){
+    digest(algorithm);
   }
 
   /** Returns the 160-bit SHA-1 HMAC of this buffer. */
@@ -2004,12 +2272,15 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
      * to read.
      */
     public int seek(long offset) {
+      Coverage.visitedge("Buffer::UnsafeCursor::seek", "start");
       if (offset < -1 || offset > buffer.size) {
+        Coverage.visitedge("Buffer::UnsafeCursor::seek", "offset<-1|offset>buffer.size");
         throw new ArrayIndexOutOfBoundsException(
             String.format("offset=%s > size=%s", offset, buffer.size));
       }
 
       if (offset == -1 || offset == buffer.size) {
+        Coverage.visitedge("Buffer::UnsafeCursor::seek", "offset=-1|offset=buffer.size");
         this.segment = null;
         this.offset = offset;
         this.data = null;
@@ -2024,12 +2295,15 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       Segment head = buffer.head;
       Segment tail = buffer.head;
       if (this.segment != null) {
+        Coverage.visitedge("Buffer::UnsafeCursor::seek", "this.segment!=null");
         long segmentOffset = this.offset - (this.start - this.segment.pos);
         if (segmentOffset > offset) {
+          Coverage.visitedge("Buffer::UnsafeCursor::seek", "segmentOffset>offset");
           // Set the cursor segment to be the 'end'
           max = segmentOffset;
           tail = this.segment;
         } else {
+          Coverage.visitedge("Buffer::UnsafeCursor::seek", "else");
           // Set the cursor segment to be the 'beginning'
           min = segmentOffset;
           head = this.segment;
@@ -2039,18 +2313,22 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       Segment next;
       long nextOffset;
       if (max - offset > offset - min) {
+        Coverage.visitedge("Buffer::UnsafeCursor::seek", "max-offset>offset-min");
         // Start at the 'beginning' and search forwards
         next = head;
         nextOffset = min;
         while (offset >= nextOffset + (next.limit - next.pos)) {
+          Coverage.visitedge("Buffer::UnsafeCursor::seek", "whileloop");
           nextOffset += (next.limit - next.pos);
           next = next.next;
         }
       } else {
+        Coverage.visitedge("Buffer::UnsafeCursor::seek", "else2");
         // Start at the 'end' and search backwards
         next = tail;
         nextOffset = max;
         while (nextOffset > offset) {
+          Coverage.visitedge("Buffer::UnsafeCursor::seek", "whileloop2");
           next = next.prev;
           nextOffset -= (next.limit - next.pos);
         }
@@ -2058,14 +2336,17 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
 
       // If we're going to write and our segment is shared, swap it for a read-write one.
       if (readWrite && next.shared) {
+
         Segment unsharedNext = next.unsharedCopy();
         if (buffer.head == next) {
+          Coverage.visitedge("Buffer::UnsafeCursor::seek", "buffer.head=next");
           buffer.head = unsharedNext;
         }
+        Coverage.visitedge("Buffer::UnsafeCursor::seek", "readWrite&next.shared");
         next = next.push(unsharedNext);
         next.prev.pop();
       }
-
+      Coverage.visitedge("Buffer::UnsafeCursor::seek", "return");
       // Update this cursor to the requested offset within the found segment.
       this.segment = next;
       this.offset = offset;

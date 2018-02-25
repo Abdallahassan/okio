@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -581,5 +582,10 @@ public final class BufferTest {
   @Test public void snapshotReportsAccurateSize() throws Exception {
     Buffer buf = new Buffer().write(new byte[] { 0, 1, 2, 3 });
     assertEquals(1, buf.snapshot(1).size());
+  }
+  @Test(expected = AssertionError.class)
+  public void noSuchAlgorithm() throws Exception{
+    Buffer buf = new Buffer();
+    buf.testDigestNoSuchAlgorithmException("no_algorithm");
   }
 }
