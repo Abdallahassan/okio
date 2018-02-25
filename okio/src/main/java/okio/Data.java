@@ -10,6 +10,7 @@ public class Data {
 	
 	Map<String, AtomicBoolean> idata;
 	String filenam;
+	String funcID
 
 	public Data (String filename, String[] BranchIDs) {
 		idata = new HashMap<String, AtomicBoolean>();
@@ -19,9 +20,15 @@ public class Data {
 		filenam = filename;
 		}
 
+	public void putfuncid(String str) {
+		funcID = str;
+	}
+
 	public void visitbranch(String Branchid) {
-		// TODO Set the branch specified by BranchId to true, and if theres's a change detected, print coverage info to file.
-		if (!idata.get(Branchid).getAndSet(true)) {
+		if (!idata.containsKey(Branchid)) {
+			throw new BranchNotDefinedException("BranchID " + Branchid + " Not found for function " + funcID);
+		}
+		else if (!idata.get(Branchid).getAndSet(true)) {
 			printdata();
 		}
 	}
