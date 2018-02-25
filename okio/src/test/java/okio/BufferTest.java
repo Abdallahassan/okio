@@ -98,17 +98,21 @@ public final class BufferTest {
     Buffer buffer = new Buffer();
 
     try {
-      buffer.readHexadecimalUnsignedLong();
+      buffer.readHexadecimalUnsignedLong(); // shouldn't be able to parse an empty buffer
       fail("should have thrown an IllegalStateException");
-    } catch (IllegalStateException exception) {}
+    } catch (IllegalStateException exception) {
+      assertEquals("size == 0", exception.getMessage());
+    }
 
     buffer.clear();
-    buffer.writeUtf8("h");
+    buffer.writeUtf8("h"); // not a hexadecimal number
 
     try {
       buffer.readHexadecimalUnsignedLong();
       fail("should have thrown a NumberFormatException");
-    } catch (NumberFormatException exception) {}
+    } catch (NumberFormatException exception) {
+      assertEquals("Expected leading [0-9a-fA-F] character but was 0x68", exception.getMessage());
+    }
 
     buffer.clear();
     buffer.writeUtf8("ffffffffffffffffffffffffffff"); // too large to fit an unsigned long
@@ -116,7 +120,9 @@ public final class BufferTest {
     try {
       buffer.readHexadecimalUnsignedLong();
       fail("should have thrown a NumberFormatException");
-    } catch (NumberFormatException exception) {}
+    } catch (NumberFormatException exception) {
+      assertEquals("Number too large: fffffffffffffffff", exception.getMessage());
+    }
   }
 
   /** Buffer's toString is the same as ByteString's. */
