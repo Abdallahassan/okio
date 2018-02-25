@@ -84,6 +84,41 @@ public final class BufferTest {
     assertEquals(Segment.SIZE * 3, buffer.completeSegmentByteCount());
   }
 
+  @Test public void testreadValidHexadecimalUnsignedLong() {
+    Buffer buffer = new Buffer();
+    buffer.writeUtf8("aA10");
+    assertEquals(0xaa10, buffer.readHexadecimalUnsignedLong());
+
+    buffer.clear();
+    buffer.writeUtf8("a ");
+    assertEquals(0xa, buffer.readHexadecimalUnsignedLong());
+  }
+
+  @Test public void testreadInvalidHexadecimalUnsignedLong() {
+    Buffer buffer = new Buffer();
+
+    try {
+      buffer.readHexadecimalUnsignedLong();
+      fail("should have thrown an IllegalStateException");
+    } catch (IllegalStateException exception) {}
+
+    buffer.clear();
+    buffer.writeUtf8("h");
+
+    try {
+      buffer.readHexadecimalUnsignedLong();
+      fail("should have thrown a NumberFormatException");
+    } catch (NumberFormatException exception) {}
+
+    buffer.clear();
+    buffer.writeUtf8("ffffffffffffffffffffffffffff"); // too large to fit an unsigned long
+
+    try {
+      buffer.readHexadecimalUnsignedLong();
+      fail("should have thrown a NumberFormatException");
+    } catch (NumberFormatException exception) {}
+  }
+
   /** Buffer's toString is the same as ByteString's. */
   @Test public void bufferToString() throws Exception {
     assertEquals("[size=0]", new Buffer().toString());
