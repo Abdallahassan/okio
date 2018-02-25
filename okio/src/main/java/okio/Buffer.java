@@ -1631,7 +1631,9 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       throw new AssertionError();
     }
   }
-
+  public void testDigestNoSuchAlgorithmException(String algorithm){
+    digest(algorithm);
+  }
   /** Returns the 160-bit SHA-1 HMAC of this buffer. */
   public ByteString hmacSha1(ByteString key) {
     return hmac("HmacSHA1", key);
