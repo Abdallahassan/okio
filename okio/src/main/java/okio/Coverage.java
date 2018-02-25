@@ -43,10 +43,7 @@ public final class Coverage {
 
 		dat.put("Buffer::writeDecimalLong", new Data("./coveragwritedec.txt", new String[]{"start", "v=0", "v<0", "v<02", "setneg", "w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10", "w11", "w12", "w13", "w14", "w15", "w16",
 													"w17", "w18", "w19", "negative", "while", "negative2", }));
-		// forgot to pass the funcID to the Data object itself
-		for (String str : dat.keySet()) {
-			dat.get(str).putfuncid(str);
-		}
+		
 	}
 
 	public static void visitedge(String funcID, String branchID) {
