@@ -1616,8 +1616,11 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   public ByteString sha512() {
       return digest("SHA-512");
   }
-
-  private ByteString digest(String algorithm) {
+    /** Returns exception . */
+  public ByteString wrongAlgorithm() {
+      return digest("wrong");
+  }
+  public ByteString digest(String algorithm) {
     try {
       MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
       if (head != null) {
