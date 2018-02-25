@@ -596,6 +596,18 @@ public final class BufferCursorTest {
     }
   }
 
+  @Test public void seekExceptionTest() throws  Exception{
+    //Contract: When seeking in buffer the offset should not be less than -1 and should not be larger then actual buffer.
+    Buffer buf = bufferFactory.newBuffer();
+    try(UnsafeCursor cursor = buf.readAndWriteUnsafe();) {
+      long offset = -3;
+      cursor.seek(offset);
+      fail();
+    }catch(ArrayIndexOutOfBoundsException e){
+      assertTrue(e.getMessage().length() > 0);
+    }
+  }
+
   /** Returns a copy of {@code buffer} with no segments with {@code original}. */
   private Buffer deepCopy(Buffer original) {
     Buffer result = new Buffer();
