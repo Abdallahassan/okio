@@ -1616,6 +1616,10 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   public ByteString sha512() {
       return digest("SHA-512");
   }
+  /** Returns exception . */
+  public ByteString wrongAlgorithm() {
+    return digest("wrong");
+  }
 
   private ByteString digest(String algorithm) {
     try {
@@ -1631,9 +1635,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       throw new AssertionError();
     }
   }
-  public void testDigestNoSuchAlgorithmException(String algorithm) throws Exception{
-    digest(algorithm);
-  }
+
   /** Returns the 160-bit SHA-1 HMAC of this buffer. */
   public ByteString hmacSha1(ByteString key) {
     return hmac("HmacSHA1", key);
