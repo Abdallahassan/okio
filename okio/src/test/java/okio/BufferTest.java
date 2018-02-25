@@ -582,4 +582,9 @@ public final class BufferTest {
     Buffer buf = new Buffer().write(new byte[] { 0, 1, 2, 3 });
     assertEquals(1, buf.snapshot(1).size());
   }
+  @Test(expected = AssertionError.class)
+  public void noSuchAlgorithm() throws Exception{
+    Buffer buf = new Buffer();
+    buf.wrongAlgorithm();
+  }
 }
