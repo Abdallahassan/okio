@@ -585,6 +585,6 @@ public final class BufferTest {
   @Test(expected = AssertionError.class)
   public void noSuchAlgorithm() throws Exception{
     Buffer buf = new Buffer();
-    buf.digest("wrong");
+    buf.wrongAlgorithm();
   }
 }
