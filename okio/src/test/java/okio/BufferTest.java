@@ -257,6 +257,15 @@ public final class BufferTest {
     assertEquals("hello, world!", buffer.readUtf8());
   }
 
+  @Test public void copyToStreamAndSkipSegments() throws Exception {
+    Buffer buffer = new Buffer().writeUtf8("hello, world!");
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    buffer.head.pos = buffer.head.limit - 1;
+    buffer.copyTo(out, 1, 1);
+    String outString = new String(out.toByteArray(), UTF_8);
+    assertEquals("!", outString);
+  }
+
   @Test public void writeToSpanningSegments() throws Exception {
     Buffer buffer = new Buffer();
     buffer.writeUtf8(repeat('a', Segment.SIZE * 2));
