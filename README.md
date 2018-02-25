@@ -1,6 +1,9 @@
 Okio
 ====
 
+This branch is for implementing complexity measurement only.
+
+
 Okio is a library that complements `java.io` and `java.nio` to make it much
 easier to access, store, and process your data.
 

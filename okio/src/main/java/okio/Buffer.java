@@ -298,19 +298,35 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   /** Returns the byte at {@code pos}. */
+  // Adding coverage for testing purposes.
   public byte getByte(long pos) {
+
+	Coverage.visitedge("Buffer::getByte", "start");
+	  
     checkOffsetAndCount(size, pos, 1);
     if (size - pos > pos) {
+	Coverage.visitedge("Buffer::getByte", "if_size");
+    	
       for (Segment s = head; true; s = s.next) {
         int segmentByteCount = s.limit - s.pos;
-        if (pos < segmentByteCount) return s.data[s.pos + (int) pos];
+        if (pos < segmentByteCount) {
+		Coverage.visitedge("Buffer::getByte", "if_inner");
+        	
+        	return s.data[s.pos + (int) pos];
+        }
         pos -= segmentByteCount;
       }
     } else {
+	Coverage.visitedge("Buffer::getByte", "else_size");
+
       pos -= size;
       for (Segment s = head.prev; true; s = s.prev) {
         pos += s.limit - s.pos;
-        if (pos >= 0) return s.data[s.pos + (int) pos];
+        if (pos >= 0) {
+		Coverage.visitedge("Buffer::getByte", "else_inner");
+
+		return s.data[s.pos + (int) pos];
+        }
       }
     }
   }
