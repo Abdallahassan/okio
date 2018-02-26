@@ -387,11 +387,14 @@ public final class BufferedSourceTest {
     assertEquals("vəˈläsəˌraptər", source.readString(Charset.forName("utf-32")));
   }
 
-  @Test (expected = IllegalArgumentException.class)
-  public void readStringInvalidByteCount() throws Exception{
+  @Test public void readStringNullCharset() throws Exception{
     sink.writeUtf8("abcd");
-    long byteCount = ((long) Integer.MAX_VALUE) + 1L;
-    assertEquals("abcd",source.readString(byteCount, Charset.forName("utf-32")));
+    try {
+      source.readString(null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertEquals("charset == null", e.getMessage());
+    }
   }
 
   @Test public void readUtf8SpansSegments() throws Exception {
