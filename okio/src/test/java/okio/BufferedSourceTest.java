@@ -387,6 +387,13 @@ public final class BufferedSourceTest {
     assertEquals("vəˈläsəˌraptər", source.readString(Charset.forName("utf-32")));
   }
 
+  @Test (expected = IllegalArgumentException.class)
+  public void readStringInvalidByteCount() throws Exception{
+    sink.writeUtf8("abcd");
+    long byteCount = ((long) Integer.MAX_VALUE) + 1L;
+    assertEquals("abcd",source.readString(byteCount, Charset.forName("utf-32")));
+  }
+
   @Test public void readUtf8SpansSegments() throws Exception {
     sink.writeUtf8(repeat('a', Segment.SIZE * 2));
     source.skip(Segment.SIZE - 1);
