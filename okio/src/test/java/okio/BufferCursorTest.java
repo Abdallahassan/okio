@@ -547,6 +547,19 @@ public final class BufferCursorTest {
     }
 
     assertEquals(expected, buffer);
+
+    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
+      cursor.expandBuffer(-1);
+      fail();
+    }catch(IllegalArgumentException e){
+     assertTrue(e.getMessage().length() > 0);
+    }
+    try (UnsafeCursor cursor = buffer.readAndWriteUnsafe()) {
+      cursor.expandBuffer(Integer.MAX_VALUE);
+      fail();
+    }catch(IllegalArgumentException e){
+      assertTrue(e.getMessage().length() > 0);
+    }
   }
 
   @Test public void expandSameSegment() throws Exception {
