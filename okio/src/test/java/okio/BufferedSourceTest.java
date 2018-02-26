@@ -408,10 +408,17 @@ public final class BufferedSourceTest {
     assertEquals(repeat('a', Segment.SIZE * 2), source.readUtf8());
   }
 
-  @Test(expected = IllegalArgumentException.class) public void readNullSink() throws Exception {
+  @Test(expected = IllegalArgumentException.class)
+  public void readNullSink() throws Exception {
     // Contract: Attempting to read from a null sink throws an IllegalArgumentException
     Buffer sink = null;
     source.read(sink, 10);
+  }
+  @Test(expected = IllegalArgumentException.class)
+  public void readNegativeByteCount() throws Exception {
+    // Contract: Attempting to read a negative offset from a sink throws an IllegalArgumentException
+    Buffer sink = new Buffer();
+    source.read(sink, -5);
   }
 
 
