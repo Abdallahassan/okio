@@ -1,0 +1,15 @@
+size<bytecount: true
+code_point>0x10ffff: true
+size=0: true
+0x110xxxxx: true
+0x10xxxxxx: true
+forloop: true
+code_point<=0xdfff&0xd800: true
+0xxxxxxx: true
+else: true
+0x1110xxxx: true
+0x11110xxx: true
+!firstbyte: true
+code_point<min: true
+Total coverage: 13/13 = 1.0
+

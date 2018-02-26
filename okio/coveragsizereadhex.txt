@@ -1,0 +1,15 @@
+b>='A'&b<='F': true
+start: true
+pos=limit: true
+size=0: true
+b>='0'&b<='9': true
+do: true
+seen=0: true
+forloop: true
+(value&0xf000000000000000L)!=0: true
+b>='a'&b<='f': true
+else: false
+else2: false
+return: true
+Total coverage: 11/13 = 0.8461538461538461
+

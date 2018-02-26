@@ -1,0 +1,19 @@
+start: true
+if10b: true
+if10a: true
+if2: true
+if1: true
+if3: true
+for1: true
+if6: true
+for2: true
+if5: true
+if4b: false
+else1: false
+if8: true
+if4a: true
+if7: true
+if9: true
+return: true
+Total coverage: 15/17 = 0.8823529411764706
+

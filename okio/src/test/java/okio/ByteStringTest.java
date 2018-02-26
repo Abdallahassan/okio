@@ -38,6 +38,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNull;
 
 @RunWith(Parameterized.class)
 public final class ByteStringTest {
@@ -101,6 +102,11 @@ public final class ByteStringTest {
 
   @Parameter(0) public Factory factory;
   @Parameter(1) public String name;
+
+
+	@Test public void testBase64() {
+	    assertNull(Base64.decode("*"));
+	  }
 
   @Test public void ofCopyRange() {
     byte[] bytes = "Hello, World!".getBytes(Util.UTF_8);
