@@ -346,6 +346,16 @@ public final class BufferTest {
     assertEquals(repeat('a', Segment.SIZE - 10) + "hello, world!", out);
   }
 
+	@Test public void readFromFail() throws Exception {
+    InputStream in = null;
+    Buffer buffer = new Buffer();
+    try {
+	    	buffer.readFrom(in, Segment.SIZE * 3);
+	        fail();
+	      } catch (IllegalArgumentException expected) {
+	      }
+  }
+
   @Test public void readFromStreamWithCount() throws Exception {
     InputStream in = new ByteArrayInputStream("hello, world!".getBytes(UTF_8));
     Buffer buffer = new Buffer();
