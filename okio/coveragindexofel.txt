@@ -1,0 +1,19 @@
+start: true
+for: true
+while: true
+fromIndex<0: false
+else: true
+size-fromIndex<fromIndex: true
+for2: false
+while3: true
+targetBytes.size()=2: false
+while2: false
+for3: true
+b=b0|b=b1: false
+else2: true
+for4: true
+start2: true
+s=null: true
+return: true
+Total coverage: 12/17 = 0.7058823529411765
+

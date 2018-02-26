@@ -637,6 +637,15 @@ public final class BufferedSourceTest {
     assertEquals(15, source.indexOfElement(ByteString.encodeUtf8("DEFGHIJKb"), 15));
   }
 
+	@Test public void indexOfElementError() throws IOException {
+	    sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
+	    try {
+	    	source.indexOfElement(ByteString.encodeUtf8("DEFGaHIJK"), -1);
+	        fail();
+	      } catch (IllegalArgumentException expected) {
+	      }
+	  }
+
   @Test public void request() throws IOException {
     sink.writeUtf8("a").writeUtf8(repeat('b', Segment.SIZE)).writeUtf8("c");
     assertTrue(source.request(Segment.SIZE + 2));

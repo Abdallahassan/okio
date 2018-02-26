@@ -1,0 +1,16 @@
+b='-'&seen=0: true
+start: true
+for: true
+pos=limit: true
+size=0: true
+do: true
+value*=10: true
+value<overflowZone|value=overflowZone&digit<overflowDigit: true
+!negative: true
+b>='0'&&b<='9': true
+seen=0: true
+else: true
+pos=limitelse: true
+return: true
+Total coverage: 14/14 = 1.0
+

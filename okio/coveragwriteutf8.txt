@@ -1,0 +1,17 @@
+start: true
+endindex<beginindex: false
+for: true
+c>=0x80: true
+string=null: false
+c<0x80: true
+c<0x800: true
+c>0xdbff|low<0xdc00|low>0xdfff: true
+beginindex<0: false
+endindex>string.length(): false
+else: true
+c<0xd800|c>0xdfff: true
+start2: true
+i<runLimit: true
+return: true
+Total coverage: 11/15 = 0.7333333333333333
+

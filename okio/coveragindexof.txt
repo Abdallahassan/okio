@@ -1,0 +1,28 @@
+impl2fromIndex<0: true
+impl2s=null: true
+impl2return: true
+impl2while2: true
+size-fromindex<fromindex: true
+fromindex<toindex: true
+start3: true
+start2: true
+start4: true
+impl2for2if: true
+toindex<size: true
+start: true
+loop2: true
+impl2while: true
+loop3: true
+loop1: true
+impl2else: true
+impl2size-fromIndex<fromIndex: true
+loop4: true
+data[pos]=b: true
+fromindex<0|toindex<fromindex: true
+impl2for: true
+impl2for2: true
+s=null: true
+return: true
+impl2bytes.size()=0: true
+Total coverage: 26/26 = 1.0
+

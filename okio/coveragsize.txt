@@ -1,0 +1,16 @@
+start: true
+endindex<beginindex1: true
+string=null: true
+c<0x80: true
+endindex<beginindex2: true
+c<0x800: true
+c>0xdbff|low<0xdc00|low>0xdfff: true
+beginindex<0: true
+endindex>length: true
+c<0xd800|c>0xdfff: true
+else1: true
+else2: true
+start2: true
+return: true
+Total coverage: 14/14 = 1.0
+

@@ -1,0 +1,15 @@
+buffer.head=next: true
+start: true
+offset=-1|offset=buffer.size: true
+this.segment!=null: true
+whileloop: true
+segmentOffset>offset: true
+whileloop2: true
+max-offset>offset-min: true
+offset<-1|offset>buffer.size: false
+else: true
+else2: true
+readWrite&next.shared: true
+return: true
+Total coverage: 12/13 = 0.9230769230769231
+

@@ -1,0 +1,29 @@
+v=0: true
+while: true
+negative: true
+w11: true
+w10: true
+w13: true
+w12: true
+w1: true
+w15: true
+w2: true
+w14: true
+w3: true
+w17: true
+w4: true
+w16: true
+w5: true
+w19: true
+w6: true
+w18: true
+w7: true
+w8: true
+w9: true
+negative2: true
+start: true
+v<0: true
+setneg: true
+v<02: true
+Total coverage: 27/27 = 1.0
+
