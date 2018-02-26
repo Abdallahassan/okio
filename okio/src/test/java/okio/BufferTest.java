@@ -649,4 +649,11 @@ public final class BufferTest {
     Buffer buf = new Buffer();
     buf.wrongAlgorithm();
   }
+  @Test (expected = IllegalStateException.class)
+  public void readAndWriteUnsafeBufferAttached(){
+    Buffer buf = new Buffer();
+    Buffer.UnsafeCursor unsafeCursor = new Buffer.UnsafeCursor();
+    unsafeCursor.buffer = buf;
+    buf.readAndWriteUnsafe(unsafeCursor);
+  }
 }
