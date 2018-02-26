@@ -387,6 +387,16 @@ public final class BufferedSourceTest {
     assertEquals("vəˈläsəˌraptər", source.readString(Charset.forName("utf-32")));
   }
 
+  @Test public void readStringNullCharset() throws Exception{
+    sink.writeUtf8("abcd");
+    try {
+      source.readString(null);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertEquals("charset == null", e.getMessage());
+    }
+  }
+
   @Test public void readUtf8SpansSegments() throws Exception {
     sink.writeUtf8(repeat('a', Segment.SIZE * 2));
     source.skip(Segment.SIZE - 1);
