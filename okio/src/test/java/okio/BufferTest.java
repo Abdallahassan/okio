@@ -321,6 +321,20 @@ public final class BufferTest {
     assertEquals(repeat('b', Segment.SIZE - 10), buffer.readUtf8(buffer.size));
   }
 
+	@Test public void writeToFail() throws Exception {
+    Buffer buffer = new Buffer();
+    buffer.writeUtf8(repeat('a', Segment.SIZE * 2));
+    buffer.writeUtf8(repeat('b', Segment.SIZE * 2));
+
+    ByteArrayOutputStream out = null; // null
+    buffer.skip(10);
+    	    try {
+	    	buffer.writeTo(out, Segment.SIZE * 3);
+	        fail();
+	      } catch (IllegalArgumentException expected) {
+	      }
+  }
+
   @Test public void writeToStream() throws Exception {
     Buffer buffer = new Buffer().writeUtf8("hello, world!");
     ByteArrayOutputStream out = new ByteArrayOutputStream();
