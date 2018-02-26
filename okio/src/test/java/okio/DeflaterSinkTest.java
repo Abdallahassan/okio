@@ -145,4 +145,33 @@ public final class DeflaterSinkTest {
     }
     return result;
   }
+  @Test (expected = IllegalArgumentException.class)
+  public void DeflaterSinkSourceNull(){
+    DeflaterSink sink = new DeflaterSink(null, new Deflater());
+  }
+  @Test (expected = IllegalArgumentException.class)
+  public void DeflaterSinkDeflaterNull(){
+
+    DeflaterSink sink = new DeflaterSink(new Sink() {
+      @Override
+      public void write(Buffer source, long byteCount) throws IOException {
+
+      }
+
+      @Override
+      public void flush() throws IOException {
+
+      }
+
+      @Override
+      public Timeout timeout() {
+        return null;
+      }
+
+      @Override
+      public void close() throws IOException {
+
+      }
+    }, null);
+  }
 }
