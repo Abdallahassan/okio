@@ -186,6 +186,18 @@ public final class BufferedSourceTest {
     assertTrue(source.exhausted());
   }
 
+  @Test public void readIntTooShortThrows() throws Exception{
+    // We only want to test this for the Buffer.java class
+    Buffer buffer = new Buffer();
+    try{
+      buffer.writeByte(3);
+      buffer.readInt();
+      fail();
+    } catch(IllegalStateException e){
+      assertEquals("size < 4: 1", e.getMessage());
+    }
+  }
+
   @Test public void readLong() throws Exception {
     sink.write(new byte[] {
         (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0x10, (byte) 0x87, (byte) 0x65, (byte) 0x43,
