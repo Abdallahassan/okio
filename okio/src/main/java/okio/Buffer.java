@@ -1459,20 +1459,20 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       pos = segmentScan(targetByteArray, offset, s, fromIndex);
     }
 
-    if(pos == null) {
+    if (pos == null) {
       return -1L;
-    }else{
+    } else {
       return pos;
     }
   }
 
-  public Integer segmentScan(byte[] targetByteArray, long offset, Segment s, long fromIndex){
+  public Integer segmentScan(byte[] targetByteArray, long offset, Segment s, long fromIndex) {
     while (offset < size) {
       byte[] data = s.data;
       for (int pos = (int) (s.pos + fromIndex - offset), limit = s.limit; pos < limit; pos++) {
         int b = data[pos];
         for (byte t : targetByteArray) {
-          if (b == t) return (int)(pos - s.pos + offset);
+          if (b == t) return (int) (pos - s.pos + offset);
         }
       }
       // Not in this segment. Try the next one.
@@ -2218,7 +2218,7 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
             offset -= (s.limit - s.pos);
           }
         } else {
-          // We're scanning in the front half of this buffer. Find the segment starting at the front.
+          // We're scanning in the front half of this buffer. Find the segment starting at the front
           offset = 0L;
           for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
             s = s.next;
