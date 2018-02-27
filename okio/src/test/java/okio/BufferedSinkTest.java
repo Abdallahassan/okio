@@ -35,6 +35,7 @@ import static java.util.Arrays.asList;
 import static okio.TestUtil.repeat;
 import static okio.Util.UTF_8;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
@@ -367,6 +368,21 @@ public final class BufferedSinkTest {
       RealBufferedSink realBufferedSink = new RealBufferedSink(sink);
       realBufferedSink.closed = true;
       realBufferedSink.write(realBufferedSink.buffer, 2);
+  }
+  @Test public void writeStringException() throws Exception{
+    //Contract: endIndex cant be smaller than beginIndex and endIndex cant be larger than string length
+    try{
+      sink.writeString("abc", 5, 1, Charset.defaultCharset());
+      fail();
+    }catch(IllegalArgumentException e){
+      assertTrue(e.getMessage().length() > 0);
+    }
+    try{
+      sink.writeString("abc", 5, 10, Charset.defaultCharset());
+      fail();
+    }catch(IllegalArgumentException e){
+      assertTrue(e.getMessage().length() > 0);
+    }
   }
 
 }
