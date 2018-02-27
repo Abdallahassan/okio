@@ -1332,40 +1332,16 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
   }
 
   @Override public long indexOf(byte b, long fromIndex, long toIndex) {
-    if (fromIndex < 0 || toIndex < fromIndex) {
-      throw new IllegalArgumentException(
-          String.format("size=%s fromIndex=%s toIndex=%s", size, fromIndex, toIndex));
-    }
+    checkIndexOfParameters(fromIndex, toIndex);
 
     if (toIndex > size) toIndex = size;
     if (fromIndex == toIndex) return -1L;
 
-    Segment s;
-    long offset;
+    FindSegmentAndOffset findSegmentAndOffset = new FindSegmentAndOffset(fromIndex).invoke();
 
-    // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
-    findSegmentAndOffset: {
-      // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
-      s = head;
-      if (s == null) {
-        // No segments to scan!
-        return -1L;
-      } else if (size - fromIndex < fromIndex) {
-        // We're scanning in the back half of this buffer. Find the segment starting at the back.
-        offset = size;
-        while (offset > fromIndex) {
-          s = s.prev;
-          offset -= (s.limit - s.pos);
-        }
-      } else {
-        // We're scanning in the front half of this buffer. Find the segment starting at the front.
-        offset = 0L;
-        for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
-          s = s.next;
-          offset = nextOffset;
-        }
-      }
-    }
+    if (findSegmentAndOffset.is()) return -1L;
+    Segment s = findSegmentAndOffset.getS();
+    long offset = findSegmentAndOffset.getOffset();
 
     // Scan through the segments, searching for b.
     while (offset < toIndex) {
@@ -1385,6 +1361,13 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
     }
 
     return -1L;
+  }
+
+  private void checkIndexOfParameters(long fromIndex, long toIndex) {
+    if (fromIndex < 0 || toIndex < fromIndex) {
+      throw new IllegalArgumentException(
+          String.format("size=%s fromIndex=%s toIndex=%s", size, fromIndex, toIndex));
+    }
   }
 
   @Override public long indexOf(ByteString bytes) throws IOException {
@@ -2215,6 +2198,59 @@ public final class Buffer implements BufferedSource, BufferedSink, Cloneable, By
       data = null;
       start = -1;
       end = -1;
+    }
+  }
+
+  public class FindSegmentAndOffset {
+    private boolean myResult;
+    private long fromIndex;
+    private Segment s;
+    private long offset;
+
+    public FindSegmentAndOffset(long fromIndex) {
+      this.fromIndex = fromIndex;
+    }
+
+    boolean is() {
+      return myResult;
+    }
+
+    public Segment getS() {
+      return s;
+    }
+
+    public long getOffset() {
+      return offset;
+    }
+
+    public FindSegmentAndOffset invoke() {
+
+      // TODO(jwilson): extract this to a shared helper method when can do so without allocating.
+      findSegmentAndOffset: {
+        // Pick the first segment to scan. This is the first segment with offset <= fromIndex.
+        s = head;
+        if (s == null) {
+          // No segments to scan!
+          myResult = true;
+          return this;
+        } else if (size - fromIndex < fromIndex) {
+          // We're scanning in the back half of this buffer. Find the segment starting at the back.
+          offset = size;
+          while (offset > fromIndex) {
+            s = s.prev;
+            offset -= (s.limit - s.pos);
+          }
+        } else {
+          // We're scanning in the front half of this buffer. Find the segment starting at the front.
+          offset = 0L;
+          for (long nextOffset; (nextOffset = offset + (s.limit - s.pos)) < fromIndex; ) {
+            s = s.next;
+            offset = nextOffset;
+          }
+        }
+      }
+      myResult = false;
+      return this;
     }
   }
 }
